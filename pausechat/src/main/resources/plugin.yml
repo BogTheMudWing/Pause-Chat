@@ -1,0 +1,16 @@
+main: io.github.stonley890.PauseChat
+name: Pause Chat
+version: 1.0.0
+api-version: 1.19
+description: A Spigot plugin that temporarily (or permanently) disables Minecraft chat.
+author: Stonley890
+
+commands:
+  pausechat:
+    description: Pauses chat for non-OPs.
+    usage: /<command> 
+    permission: minecraft.command.op
+  pausebypass:
+    description: Let player bypass pause.
+    usage: /command
+    permission: minecraft.command.op

@@ -6,41 +6,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.security.auth.login.LoginException;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerLoginEvent.Result;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.shanerx.mojang.Mojang;
 
-import io.github.stonley890.commands.CommandsManager;
-import io.github.stonley890.data.PlayerMemory;
-import io.github.stonley890.data.PlayerUtility;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.TextChannel;
+public class PauseChat extends JavaPlugin implements Listener {
 
-public class App extends JavaPlugin implements Listener {
-
-    private static App plugin;
+    private static PauseChat plugin;
     private static boolean chatPaused;
 
     @Override
@@ -55,7 +38,7 @@ public class App extends JavaPlugin implements Listener {
 
         // Create config if needed
         getDataFolder().mkdir();
-        saveDefaultConfig()
+        saveDefaultConfig();
 
         // If chat was previously paused, restore and notify in console
         if (getConfig().getBoolean("chatPaused")) {
@@ -63,16 +46,46 @@ public class App extends JavaPlugin implements Listener {
             Bukkit.getServer().getLogger()
                     .info("Chat is currently paused from last session! Use /pausechat to allow users to chat.");
         }
+
+        // Load pauseBypass.yml
+        File file = new File(getDataFolder().getAbsolutePath() + "/pauseBypass.yml");
+        FileConfiguration fileConfig = YamlConfiguration.loadConfiguration(file);
+
+        // Init saved players
+        List<String> bypassedPlayers = new ArrayList<>(100);
+
+        // If file does not exist, create one
+        if (file.exists() == false) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // If file is empty, add a player to initialize
+        if (fileConfig.get("players") == null) {
+            Mojang mojang = new Mojang();
+            mojang.connect();
+
+            bypassedPlayers.add(mojang.getUUIDOfUsername("BogTheMudWing").replaceFirst(
+                    "(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)",
+                    "$1-$2-$3-$4-$5"));
+            fileConfig.set("players", bypassedPlayers);
+            try {
+                fileConfig.save(file);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    public static App getPlugin() {
+    public static PauseChat getPlugin() {
         return plugin;
     }
 
     @EventHandler
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
-        String cmd = event.getMessage();
-        Player ply = event.getPlayer();
         if (event.getMessage().startsWith("/me")) {
 
             if (chatPaused) {
@@ -90,10 +103,6 @@ public class App extends JavaPlugin implements Listener {
 
                 if (bypassedPlayers.contains(event.getPlayer().getUniqueId().toString())
                         || event.getPlayer().isOp()) {
-                    TextChannel chatChannel = Bot.getJDA().getTextChannelById(CommandsManager.getChatChannel());
-                    String action = cmd.replaceFirst("/me ", "");
-                    chatChannel.sendMessage("**[" + ChatColor.stripColor(ply.getDisplayName()) + " **(" + ply.getName()
-                            + ")**]** " + ChatColor.stripColor(action)).queue();
                 } else {
                     event.setCancelled(true);
                     event.getPlayer().sendMessage(ChatColor.RED + "Chat is currently paused.");
@@ -106,23 +115,15 @@ public class App extends JavaPlugin implements Listener {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         // pausechat command
         if (label.equalsIgnoreCase("pausechat")) {
-            TextChannel chatChannel = Bot.getJDA().getTextChannelById(CommandsManager.getChatChannel());
             // If chat is paused, unpause. If not, pause
             if (chatPaused == true) {
                 chatPaused = false;
                 getConfig().set("chatPaused", false);
                 Bukkit.getServer().broadcastMessage(ChatColor.GOLD + "Chat has been unpaused.");
-                if (chatChannel != null) {
-                    chatChannel.sendMessage("**Chat has been unpaused. Messages will now be sent to Minecraft**")
-                            .queue();
-                }
             } else {
                 chatPaused = true;
                 getConfig().set("chatPaused", true);
                 Bukkit.getServer().broadcastMessage(ChatColor.GOLD + "Chat has been paused.");
-                if (chatChannel != null) {
-                    chatChannel.sendMessage("**Chat has been paused. Messages will not be sent to Minecraft**").queue();
-                }
             }
             saveConfig();
         } else if (label.equalsIgnoreCase("pausebypass")) {
@@ -264,7 +265,7 @@ public class App extends JavaPlugin implements Listener {
             // If player is on soft whitelist or is op, allow. If not, kick player.
             if (bypassedPlayers.contains(event.getPlayer().getUniqueId().toString())
                     || event.getPlayer().isOp()) {
-                
+
             } else {
                 event.setCancelled(true);
                 event.getPlayer().sendMessage(ChatColor.RED + "Chat is currently paused.");

@@ -17,7 +17,8 @@ public class PauseBypass {
 
     public static void init() throws IOException {
         if (!file.exists()) {
-            file.createNewFile();
+            boolean created = file.createNewFile();
+            if (created) PauseChat.getPlugin().getLogger().info("Created " + file.getName() + ".");
         }
     }
 

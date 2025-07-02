@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.githib.stonley890</groupId>
   <artifactId>pausechat</artifactId>
-  <version>1.0.4</version>
+  <version>v1-2.0.0</version>
   <packaging>jar</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -54,6 +54,7 @@
     <resources>
       <resource>
         <directory>${project.basedir}/src/main/resources</directory>
+        <filtering>true</filtering>
         <includes>
           <include>plugin.yml</include>
           <include>config.yml</include>

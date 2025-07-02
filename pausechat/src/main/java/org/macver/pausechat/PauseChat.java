@@ -18,7 +18,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -89,7 +88,7 @@ public class PauseChat extends JavaPlugin implements Listener {
                     throw CommandAPI.failWithString("You must specify a subcommand: add, remove, or list!");
                 })
                 .withSubcommand(new CommandAPICommand("add")
-                        .withArguments(new EntitySelectorArgument.ManyPlayers("players"))
+                        .withArguments(new EntitySelectorArgument.ManyPlayers("players", false))
                         .executes((sender, args) -> {
 
                             // Get all players in the selection
@@ -106,7 +105,7 @@ public class PauseChat extends JavaPlugin implements Listener {
                             PauseBypass.setPlayers(playersList);
 
                             // Send message
-                            String baseMessage = "Added &s to the bypass list.";
+                            String baseMessage = "Added %s to the bypass list.";
                             String target = players.size() + " players";
                             if (players.size() == 1) {
                                 // Use name if only one player
@@ -117,7 +116,7 @@ public class PauseChat extends JavaPlugin implements Listener {
                         })
                 )
                 .withSubcommand(new CommandAPICommand("remove")
-                        .withArguments(new EntitySelectorArgument.ManyPlayers("players"))
+                        .withArguments(new EntitySelectorArgument.ManyPlayers("players", false))
                         .executes((sender, args) -> {
 
                             // Get all players in the selection
@@ -138,7 +137,7 @@ public class PauseChat extends JavaPlugin implements Listener {
                             PauseBypass.setPlayers(playersList);
 
                             // Send message
-                            String baseMessage = "Removed &s from the bypass list.";
+                            String baseMessage = "Removed %s from the bypass list.";
                             String target = players.size() + " players";
                             if (players.size() == 1) {
                                 // Use name if only one player
@@ -170,29 +169,29 @@ public class PauseChat extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerCommandPreprocess(@NotNull PlayerCommandPreprocessEvent event) {
         if (event.getMessage().startsWith("/me")) {
-            if (cancelIfNotAllowed(event)) event.setCancelled(true);
+            if (isChatBlocked(event.getPlayer())) {
+                event.getPlayer().sendMessage(ChatColor.RED + "Chat is currently paused.");
+                event.setCancelled(true);
+            }
         }
     }
 
     @EventHandler
-    public void onPlayerChatEvent(AsyncPlayerChatEvent event) {
-        if (cancelIfNotAllowed(event)) event.setCancelled(true);
+    public void onPlayerChatEvent(@NotNull AsyncPlayerChatEvent event) {
+        if (isChatBlocked(event.getPlayer())) {
+            event.getPlayer().sendMessage(ChatColor.RED + "Chat is currently paused.");
+            event.setCancelled(true);
+        }
     }
 
-    private static boolean cancelIfNotAllowed(@NotNull PlayerEvent event) {
-        if (chatPaused) {
-            if (!isPlayerPauseImmune(event.getPlayer())) {
-                event.getPlayer().sendMessage(ChatColor.RED + "Chat is currently paused.");
-                return true;
-            }
-        }
-        return false;
+    private static boolean isChatBlocked(@NotNull Player player) {
+        return chatPaused && !isPlayerPauseImmune(player);
     }
 
     public static boolean isPlayerPauseImmune(@NotNull Player player) {
         List<UUID> bypassedPlayers = PauseBypass.getPlayers();
         // True if player has the pausechat.bypass permission or if on the bypass list.
-        return player.hasPermission("pausechat.bypass") || !bypassedPlayers.contains(player.getUniqueId());
+        return player.hasPermission("pausechat.bypass") || bypassedPlayers.contains(player.getUniqueId());
 
     }
 }

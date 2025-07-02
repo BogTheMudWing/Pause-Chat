@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.githib.stonley890</groupId>
   <artifactId>pausechat</artifactId>
-  <version>1.0.3</version>
+  <version>1.0.4</version>
   <packaging>jar</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -43,7 +43,7 @@
       <!--Brigadier Command API-->
       <groupId>dev.jorel</groupId>
       <artifactId>commandapi-bukkit-shade</artifactId>
-      <version>10.1.0</version>
+      <version>10.1.1</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>

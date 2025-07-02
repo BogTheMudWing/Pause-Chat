@@ -1,4 +1,4 @@
-package io.github.stonley890.pausechat;
+package org.macver.pausechat;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

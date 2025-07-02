@@ -1,4 +1,4 @@
-package io.github.stonley890.pausechat;
+package org.macver.pausechat;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -10,7 +10,6 @@ import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.EntitySelectorArgument;
-import dev.jorel.commandapi.executors.NativeResultingCommandExecutor;
 import dev.jorel.commandapi.executors.ResultingCommandExecutor;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

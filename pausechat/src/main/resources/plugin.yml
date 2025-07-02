@@ -1,6 +1,6 @@
-main: io.github.stonley890.pausechat.PauseChat
+main: org.macver.pausechat.PauseChat
 name: PauseChat
 version: 1.0.3
 api-version: 1.19
 description: A Spigot plugin that temporarily (or permanently) disables Minecraft chat.
-author: Stonley890
+author: BogTheMudWing

@@ -61,19 +61,17 @@ public class PauseChat extends JavaPlugin implements Listener {
                 .withPermission(CommandPermission.fromString("pausechat.manage.state"))
                 .executesNative((sender, args) -> {
                     // Check if the chat is paused
-                    if (chatPaused) {
+                    if (isChatPaused()) {
                         // If the chat is paused, unpause it.
                         // Change settings
-                        chatPaused = false;
-                        plugin.getConfig().set("chatPaused", chatPaused);
+                        setChatPaused(false);
 
                         // Broadcast to server
                         Bukkit.getServer().broadcastMessage(ChatColor.GOLD + "Chat has been unpaused.");
                     } else {
                         // If the chat is not paused, pause it.
                         // Change settings
-                        chatPaused = true;
-                        plugin.getConfig().set("chatPaused", chatPaused);
+                        setChatPaused(true);
 
                         // Broadcast to server
                         Bukkit.getServer().broadcastMessage(ChatColor.GOLD + "Chat has been paused.");
@@ -162,6 +160,15 @@ public class PauseChat extends JavaPlugin implements Listener {
                 .register();
     }
 
+    public static boolean isChatPaused() {
+        return chatPaused;
+    }
+
+    public static void setChatPaused(boolean state) {
+        chatPaused = state;
+        plugin.getConfig().set("chatPaused", chatPaused);
+    }
+
     public static PauseChat getPlugin() {
         return plugin;
     }
@@ -184,10 +191,20 @@ public class PauseChat extends JavaPlugin implements Listener {
         }
     }
 
-    private static boolean isChatBlocked(@NotNull Player player) {
-        return chatPaused && !isPlayerPauseImmune(player);
+    /**
+     * Whether a given player is not allowed to chat at current time. This will return false only if chat is paused and the player is not immune.
+     * @param player the player to check
+     * @return whether the player is allowed to chat
+     */
+    public static boolean isChatBlocked(@NotNull Player player) {
+        return isChatPaused() && !isPlayerPauseImmune(player);
     }
 
+    /**
+     * Whether this player should be able to bypass chat pause.
+     * @param player the player to check
+     * @return whether the player is immune to chat pause
+     */
     public static boolean isPlayerPauseImmune(@NotNull Player player) {
         List<UUID> bypassedPlayers = PauseBypass.getPlayers();
         // True if player has the pausechat.bypass permission or if on the bypass list.
